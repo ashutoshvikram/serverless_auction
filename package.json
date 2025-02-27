@@ -1,8 +1,9 @@
 {
   "name": "sls-base",
   "version": "1.0.0",
-  "description": "Codingly template for Serverless Framework projects",
-  "author": "Ariel Weinberger <ariel@codingly.io>",
+  "type": "module",
+  "description": "Serverless Framework project",
+  "author": "Ashutosh",
   "license": "MIT",
   "devDependencies": {
     "babel-core": "^6.25.0",
@@ -15,6 +16,7 @@
     "webpack": "^4.35.2"
   },
   "dependencies": {
-    "aws-sdk": "^2.639.0"
+    "aws-sdk": "^2.639.0",
+    "uuid": "^11.1.0"
   }
 }
