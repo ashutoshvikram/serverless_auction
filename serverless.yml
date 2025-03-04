@@ -1,3 +1,5 @@
+# "org" ensures this Service is used with the correct Serverless Framework Access Key.
+org: avproject
 service: sls-base
 
 plugins:
@@ -12,8 +14,12 @@ provider:
   region: eu-west-1
   environment:
     AUCTIONS_TABLE_NAME: ${self:custom.AuctionsTable.name}
+    MAILQUEUE_ARN: ${self:custom.MailQueue.arn}
+    MAILQUEUE_URL: ${self:custom.MailQueue.url}
+    
   iamRoleStatements:  
     - ${file(iam/AuctionsTableIAM.yml):AuctionsTableIAM}
+    - ${file(iam/MailqueueIAM.yml):MailQueueIAM}
   
 resources:
   Resources:
@@ -26,6 +32,7 @@ functions:
       - http:
           method: POST
           path: /auction
+          authorizer: ${self:custom.authorizer}
 
   getAuctions:
     handler: src/handlers/getAuctions.handler
@@ -33,13 +40,15 @@ functions:
       - http:
           method: GET
           path: /auctions  
-
+          authorizer: ${self:custom.authorizer}
   getAuction:
     handler: src/handlers/getAuction.handler
     events:
       - http:
           method: GET
           path: /auction/{id}
+          authorizer: ${self:custom.authorizer}
+
   
   placeBid:
     handler: src/handlers/placeBid.handler
@@ -47,6 +56,7 @@ functions:
       - http:
           method: PATCH
           path: /auction/{id}/bid
+          authorizer: ${self:custom.authorizer}
 
   processAuctions:
     handler: src/handlers/processAuctions.handler
@@ -56,8 +66,14 @@ functions:
           enabled: false
           
 custom:
+  authorizer: arn:aws:lambda:#{AWS::Region}:#{AWS::AccountId}:function:authAuction-${self:provider.stage}-auth
   AuctionsTable:
     name: !Ref AuctionsTable
     arn:  !GetAtt AuctionsTable.Arn
+
+  MailQueue:
+    arn: ${cf:notification-service-${self:provider.stage}.MailQueueArn}
+    url: ${cf:notification-service-${self:provider.stage}.MailQueueUrl}
+
   bundle:
     linting:false
